@@ -78,7 +78,7 @@ import com.example.myopeninapp.com.example.myopeninapp.data.model.data.Link
 import com.example.myopeninapp.com.example.myopeninapp.data.model.data.RecentLink
 import com.example.myopeninapp.com.example.myopeninapp.data.model.data.TopLink
 import com.example.myopeninapp.repository.DashboardRepository
-import com.example.myopeninapp.ui.components.links.DashboardViewModel
+import com.example.myopeninapp.ui.components.links.LinksViewmodel
 import com.example.myopeninapp.ui.components.links.DashboardViewModelFactory
 import com.example.myopeninapp.ui.theme.Blue
 import com.example.myopeninapp.ui.theme.LighterGray
@@ -94,13 +94,12 @@ import com.github.mikephil.charting.formatter.ValueFormatter
 import utils.Resource
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 @Composable
 fun DashboardScreen() {
-    val dashboardViewModel: DashboardViewModel =
+    val dashboardViewModel: LinksViewmodel =
         viewModel(
             factory = DashboardViewModelFactory(DashboardRepository())
         )
@@ -774,16 +773,6 @@ fun DashboardScreenPreview() {
     DashboardScreen()
 }
 
-@Preview(showBackground = true)
-@Composable
-fun LinkListItemPreview() {
-    LinkListItem(
-        name = "Link Name",
-        time = "2 hours ago",
-        url = "https://www.example.com",
-        clicks = 100
-    )
-}
 
 @Preview(showBackground = true)
 @Composable

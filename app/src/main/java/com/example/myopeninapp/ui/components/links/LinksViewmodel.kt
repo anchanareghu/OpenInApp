@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import utils.Resource
 
-class DashboardViewModel(private val repository: DashboardRepository) : ViewModel() {
+class LinksViewmodel(private val repository: DashboardRepository) : ViewModel() {
     private val _dashboardData = MutableStateFlow<Resource<DashboardData>>(Resource.Loading())
     val dashboardData: StateFlow<Resource<DashboardData>> = _dashboardData
 
@@ -37,8 +37,8 @@ class DashboardViewModelFactory(
 ) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(DashboardViewModel::class.java)) {
-            return DashboardViewModel(repository) as T
+        if (modelClass.isAssignableFrom(LinksViewmodel::class.java)) {
+            return LinksViewmodel(repository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
