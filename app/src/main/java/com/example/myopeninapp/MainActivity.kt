@@ -1,4 +1,4 @@
-package com.example.myopeninapp.com.example.myopeninapp
+package com.example.myopeninapp
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -10,6 +10,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.example.myopeninapp.ui.components.navigation.MainScreen
 import com.example.myopeninapp.ui.theme.MyOpenInAppTheme
+import com.github.mikephil.charting.utils.Utils
 
 class MainActivity : ComponentActivity() {
 
@@ -17,6 +18,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            Utils.init(applicationContext)
             MyOpenInAppTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),

@@ -38,6 +38,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -92,6 +93,7 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.ValueFormatter
 import utils.Resource
+import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -252,45 +254,63 @@ fun Modifier.shimmerEffect(): Modifier = composed {
 fun LineChartViewComposable(
     overallUrlChart: Map<String, Int>?
 ) {
-    if (overallUrlChart.isNullOrEmpty()) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .height(250.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-        ) {
-            Column(
+    val errorState = remember { mutableStateOf<String?>(null) }
+    val lineData = remember { mutableStateOf<LineData?>(null) }
+
+    LaunchedEffect(overallUrlChart) {
+        try {
+            if (overallUrlChart.isNullOrEmpty()) {
+                errorState.value = "No Data Available"
+                lineData.value = null
+            } else {
+                lineData.value = generateLineData(overallUrlChart)
+                errorState.value = null
+            }
+        } catch (e: Exception) {
+            errorState.value = "Error processing chart data"
+        }
+    }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 16.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .height(250.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+    ) {
+        if (lineData.value == null) {
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .padding(16.dp)
             ) {
                 Text(
-                    text = "No Data Available",
+                    text = errorState.value ?: "Unknown error",
                     color = Color.Gray,
                     fontSize = 16.sp
                 )
             }
-        }
-    } else {
-        val lineData = remember(overallUrlChart) { generateLineData(overallUrlChart) }
+        } else {
+            val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+            val startDate = overallUrlChart?.keys?.minOrNull()?.let {
+                try {
+                    dateFormat.parse(it)
+                } catch (e: ParseException) {
+                    e.printStackTrace()
+                    null
+                }
+            }
+            val endDate = overallUrlChart?.keys?.maxOrNull()?.let {
+                try {
+                    dateFormat.parse(it)
+                } catch (e: ParseException) {
+                    e.printStackTrace()
+                    null
+                }
+            }
+            val textFormat = SimpleDateFormat("d MMM", Locale.US)
 
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-        val startDate = overallUrlChart.keys.minOrNull()?.let { dateFormat.parse(it) }
-        val endDate = overallUrlChart.keys.maxOrNull()?.let { dateFormat.parse(it) }
-        val textFormat = SimpleDateFormat("d MMM", Locale.US)
-
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .height(250.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-        ) {
             Column {
                 Row(
                     modifier = Modifier
@@ -321,7 +341,7 @@ fun LineChartViewComposable(
                         )
                     }
                 }
-
+                val lineData = lineData.value ?: return@Card
                 AndroidView(
                     modifier = Modifier
                         .padding(16.dp)
@@ -369,15 +389,26 @@ private fun generateLineData(chartResponse: Map<String, Int>?): LineData {
     val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
     val calendar = Calendar.getInstance()
 
-    val startDate = chartResponse?.keys?.minOrNull()?.let { dateFormat.parse(it) }
+    val startDate = chartResponse?.keys?.minOrNull()?.let {
+        try {
+            dateFormat.parse(it)
+        } catch (e: ParseException) {
+            e.printStackTrace()
+            null
+        }
+    }
 
     chartResponse?.forEach { (key, value) ->
-        val date = dateFormat.parse(key)
-        date?.let {
-            calendar.time = date
-            val daysSinceStart =
-                TimeUnit.MILLISECONDS.toDays(date.time - (startDate?.time ?: 0)).toFloat()
-            lineList.add(Entry(daysSinceStart, value.toFloat()))
+        try {
+            val date = dateFormat.parse(key)
+            date?.let {
+                calendar.time = date
+                val daysSinceStart =
+                    TimeUnit.MILLISECONDS.toDays(date.time - (startDate?.time ?: 0)).toFloat()
+                lineList.add(Entry(daysSinceStart, value.toFloat()))
+            }
+        } catch (e: ParseException) {
+            e.printStackTrace()
         }
     }
 
@@ -405,11 +436,11 @@ private fun generateLineData(chartResponse: Map<String, Int>?): LineData {
 
 
 class MonthValueFormatter() : ValueFormatter() {
-    private val months = arrayOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+    private val months =
+        arrayOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 
     override fun getAxisLabel(value: Float, axis: AxisBase?): String {
         return months.getOrNull(value.toInt() % 12) ?: ""
-
     }
 }
 
