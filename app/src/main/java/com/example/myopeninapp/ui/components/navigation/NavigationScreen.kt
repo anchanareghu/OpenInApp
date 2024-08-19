@@ -29,7 +29,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.myopeninapp.R
 import com.example.myopeninapp.com.example.myopeninapp.ui.components.campaigns.CampaignScreen
 import com.example.myopeninapp.com.example.myopeninapp.ui.components.courses.CoursesScreen
-import com.example.myopeninapp.com.example.myopeninapp.ui.components.links.DashboardScreen
+import com.example.myopeninapp.ui.components.links.LinksScreen
 import com.example.myopeninapp.ui.components.profile.ProfileScreen
 import com.example.myopeninapp.ui.theme.Blue
 import com.example.myopeninapp.ui.theme.MyOpenInAppTheme
@@ -121,7 +121,7 @@ fun MainScreen() {
             startDestination = "links"
         ) {
             composable("links") {
-                DashboardScreen()
+                LinksScreen()
             }
             composable("courses") {
                 CoursesScreen()

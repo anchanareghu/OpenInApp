@@ -1,4 +1,4 @@
-package com.example.myopeninapp.com.example.myopeninapp.data.model.data
+package com.example.myopeninapp.data.model.data
 
 
 abstract class Link {
@@ -8,34 +8,36 @@ abstract class Link {
 }
 
 data class TopLink(
-    val app: String,
-    val created_at: String,
-    val domain_id: String,
-    val original_image: String,
+    val url_id: Int,
+    val web_link: String,
     val smart_link: String,
-    val thumbnail: Any,
-    override val times_ago: String,
     override val title: String,
     override val total_clicks: Int,
-    val url_id: Int,
+    val original_image: String,
+    val thumbnail: Int,
+    override val times_ago: String,
+    val created_at: String,
+    val domain_id: String,
     val url_prefix: String,
     val url_suffix: String,
-    val web_link: String
+    val app: String,
+    val is_favourite: Boolean
 ) : Link()
 
 
 data class RecentLink(
-    val app: String,
-    val created_at: String,
-    val domain_id: String,
-    val original_image: String,
+    val url_id: Int,
+    val web_link: String,
     val smart_link: String,
-    val thumbnail: Any,
-    override val times_ago: String,
     override val title: String,
     override val total_clicks: Int,
-    val url_id: Int,
-    val url_prefix: Any,
+    val original_image: String,
+    val thumbnail: Int,
+    override val times_ago: String,
+    val created_at: String,
+    val domain_id: String,
+    val url_prefix: String,
     val url_suffix: String,
-    val web_link: String
+    val app: String,
+    val is_favourite: Boolean
 ) : Link()

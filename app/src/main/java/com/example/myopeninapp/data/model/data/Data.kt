@@ -1,4 +1,4 @@
-package com.example.myopeninapp.com.example.myopeninapp.data.model.data
+package com.example.myopeninapp.data.model.data
 
 data class Data(
     val overall_url_chart: Map<String, Int>,

@@ -1,4 +1,4 @@
-package com.example.myopeninapp.com.example.myopeninapp.ui.components.links
+package com.example.myopeninapp.ui.components.links
 
 import android.graphics.drawable.GradientDrawable
 import android.widget.Toast
@@ -74,13 +74,11 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myopeninapp.R
-import com.example.myopeninapp.com.example.myopeninapp.data.model.data.DashboardData
-import com.example.myopeninapp.com.example.myopeninapp.data.model.data.Link
-import com.example.myopeninapp.com.example.myopeninapp.data.model.data.RecentLink
-import com.example.myopeninapp.com.example.myopeninapp.data.model.data.TopLink
-import com.example.myopeninapp.repository.DashboardRepository
-import com.example.myopeninapp.ui.components.links.LinksViewmodel
-import com.example.myopeninapp.ui.components.links.DashboardViewModelFactory
+import com.example.myopeninapp.data.model.data.LinksData
+import com.example.myopeninapp.data.model.data.Link
+import com.example.myopeninapp.data.model.data.RecentLink
+import com.example.myopeninapp.data.model.data.TopLink
+import com.example.myopeninapp.repository.LinksRepository
 import com.example.myopeninapp.ui.theme.Blue
 import com.example.myopeninapp.ui.theme.LighterGray
 import com.example.myopeninapp.ui.theme.Red
@@ -100,11 +98,9 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 @Composable
-fun DashboardScreen() {
+fun LinksScreen() {
     val dashboardViewModel: LinksViewmodel =
-        viewModel(
-            factory = DashboardViewModelFactory(DashboardRepository())
-        )
+        viewModel(factory = LinksViewModelFactory(repository = LinksRepository()))
     val dashboardData by dashboardViewModel.dashboardData.collectAsState()
 
     ConstraintLayout(
@@ -249,7 +245,6 @@ fun Modifier.shimmerEffect(): Modifier = composed {
         size = it.size
     }
 }
-
 @Composable
 fun LineChartViewComposable(
     overallUrlChart: Map<String, Int>?
@@ -283,7 +278,8 @@ fun LineChartViewComposable(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp)
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = errorState.value ?: "Unknown error",
@@ -292,25 +288,6 @@ fun LineChartViewComposable(
                 )
             }
         } else {
-            val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-            val startDate = overallUrlChart?.keys?.minOrNull()?.let {
-                try {
-                    dateFormat.parse(it)
-                } catch (e: ParseException) {
-                    e.printStackTrace()
-                    null
-                }
-            }
-            val endDate = overallUrlChart?.keys?.maxOrNull()?.let {
-                try {
-                    dateFormat.parse(it)
-                } catch (e: ParseException) {
-                    e.printStackTrace()
-                    null
-                }
-            }
-            val textFormat = SimpleDateFormat("d MMM", Locale.US)
-
             Column {
                 Row(
                     modifier = Modifier
@@ -330,55 +307,54 @@ fun LineChartViewComposable(
                                 shape = RoundedCornerShape(8.dp)
                             ),
                     ) {
-                        Text(
-                            modifier = Modifier.padding(8.dp),
-                            text = "${startDate?.let { textFormat.format(it) }} - ${
-                                endDate?.let {
-                                    textFormat.format(it)
-                                }
-                            }",
-                            color = Color.Gray
-                        )
-                    }
-                }
-                val lineData = lineData.value ?: return@Card
-                AndroidView(
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth()
-                        .height(250.dp),
-                    factory = { context ->
-                        LineChart(context).apply {
-                            this.data = lineData
-
-                            this.xAxis.apply {
-                                position = XAxis.XAxisPosition.BOTTOM
-                                setDrawGridLines(true)
-                                setDrawAxisLine(true)
-                                valueFormatter = MonthValueFormatter()
-                                axisMinimum = 0f
-                                axisMaximum = lineData.xMax
-                            }
-
-                            this.axisRight.isEnabled = false
-                            this.axisLeft.apply {
-                                setDrawGridLines(true)
-                                setDrawAxisLine(true)
-                                axisMinimum = 0f
-                                axisMaximum = lineData.yMax
-                            }
-
-                            this.description.isEnabled = false
-                            this.legend.isEnabled = false
-
-                            setDrawGridBackground(false)
-                            setBackgroundColor(Color.Transparent.toArgb())
-                            setPadding(0, 0, 0, 0)
-
-                            this.invalidate()
+                        if (overallUrlChart != null) {
+                            Text(
+                                modifier = Modifier.padding(8.dp),
+                                text = "${overallUrlChart.keys.minOrNull()} - ${overallUrlChart.keys.maxOrNull()}",
+                                color = Color.Gray
+                            )
                         }
                     }
-                )
+                }
+                if (lineData.value != null) {
+                    AndroidView(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .fillMaxWidth()
+                            .height(250.dp),
+                        factory = { context ->
+                            LineChart(context).apply {
+                                this.data = lineData.value
+
+                                this.xAxis.apply {
+                                    position = XAxis.XAxisPosition.BOTTOM
+                                    setDrawGridLines(true)
+                                    setDrawAxisLine(true)
+                                    valueFormatter = HourValueFormatter()
+                                    axisMinimum = 0f
+                                    axisMaximum = lineData.value?.xMax ?: 0f
+                                }
+
+                                this.axisRight.isEnabled = false
+                                this.axisLeft.apply {
+                                    setDrawGridLines(true)
+                                    setDrawAxisLine(true)
+                                    axisMinimum = 0f
+                                    axisMaximum = lineData.value?.yMax ?: 0f
+                                }
+
+                                this.description.isEnabled = false
+                                this.legend.isEnabled = false
+
+                                setDrawGridBackground(false)
+                                setBackgroundColor(Color.Transparent.toArgb())
+                                setPadding(0, 0, 0, 0)
+
+                                this.invalidate()
+                            }
+                        }
+                    )
+                }
             }
         }
     }
@@ -386,7 +362,7 @@ fun LineChartViewComposable(
 
 private fun generateLineData(chartResponse: Map<String, Int>?): LineData {
     val lineList = ArrayList<Entry>()
-    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+    val dateFormat = SimpleDateFormat("HH:mm", Locale.US)
     val calendar = Calendar.getInstance()
 
     val startDate = chartResponse?.keys?.minOrNull()?.let {
@@ -403,9 +379,9 @@ private fun generateLineData(chartResponse: Map<String, Int>?): LineData {
             val date = dateFormat.parse(key)
             date?.let {
                 calendar.time = date
-                val daysSinceStart =
-                    TimeUnit.MILLISECONDS.toDays(date.time - (startDate?.time ?: 0)).toFloat()
-                lineList.add(Entry(daysSinceStart, value.toFloat()))
+                val hoursSinceStart =
+                    TimeUnit.MILLISECONDS.toHours(date.time - (startDate?.time ?: 0)).toFloat()
+                lineList.add(Entry(hoursSinceStart, value.toFloat()))
             }
         } catch (e: ParseException) {
             e.printStackTrace()
@@ -434,24 +410,21 @@ private fun generateLineData(chartResponse: Map<String, Int>?): LineData {
     return LineData(lineDataSet)
 }
 
-
-class MonthValueFormatter() : ValueFormatter() {
-    private val months =
-        arrayOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
-
+class HourValueFormatter() : ValueFormatter() {
     override fun getAxisLabel(value: Float, axis: AxisBase?): String {
-        return months.getOrNull(value.toInt() % 12) ?: ""
+        val hour = (value.toInt() % 24)
+        return String.format("%02d:00", hour)
     }
 }
 
 
 @Composable
 fun QuickInfoCards(
-    dataList: List<DashboardData>
+    dataList: List<LinksData>
 ) {
     LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier
+            .padding(top = 16.dp, bottom = 16.dp)
             .fillMaxWidth()
     ) {
         items(dataList) { data ->
@@ -459,7 +432,7 @@ fun QuickInfoCards(
                 icon = painterResource(id = R.drawable.click),
                 tint = Violet,
                 title = data.total_clicks.toString(),
-                subtitle = "Today's Clicks"
+                subtitle = "Total Clicks"
             )
             QuickInfoCard(
                 icon = painterResource(id = R.drawable.location),
@@ -473,6 +446,18 @@ fun QuickInfoCards(
                 title = data.top_source,
                 subtitle = "Top Source"
             )
+            QuickInfoCard(
+                icon = painterResource(id = R.drawable.links),
+                tint = Color.Blue,
+                title = data.total_links.toString(),
+                subtitle = "Total Links"
+            )
+            QuickInfoCard(
+                icon = painterResource(id = R.drawable.click),
+                tint = Color.Magenta,
+                title = data.today_clicks.toString(),
+                subtitle = "Today's Clicks"
+            )
         }
     }
 }
@@ -480,16 +465,15 @@ fun QuickInfoCards(
 @Composable
 fun QuickInfoCard(icon: Painter, tint: Color, title: String, subtitle: String) {
     Card(
-        modifier = Modifier
-            .padding(8.dp)
-            .fillMaxWidth(0.8f),
+        modifier = Modifier.padding(end = 8.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-            Image(
+            Icon(
                 painter = icon,
+                tint = tint,
                 contentDescription = null,
                 modifier = Modifier
                     .size(36.dp)
@@ -543,7 +527,7 @@ fun AnalyticsButton() {
 }
 
 @Composable
-fun TabsSection(dashboardData: DashboardData) {
+fun TabsSection(dashboardData: LinksData) {
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("Top Links", "Recent Links")
 
@@ -801,45 +785,37 @@ fun Contact(icon: Painter, text: String) {
 @Preview(showBackground = true)
 @Composable
 fun DashboardScreenPreview() {
-    DashboardScreen()
+    LinksScreen()
 }
-
 
 @Preview(showBackground = true)
 @Composable
 fun LineChartViewPreview() {
     val urlChartResponse = mapOf(
-        "2023-05-13" to 1,
-        "2023-05-14" to 0,
-        "2023-05-15" to 0,
-        "2023-05-16" to 0,
-        "2023-05-17" to 0,
-        "2023-05-18" to 0,
-        "2023-05-19" to 9,
-        "2023-05-20" to 4,
-        "2023-05-21" to 1,
-        "2023-05-22" to 10,
-        "2023-05-23" to 7,
-        "2023-05-24" to 9,
-        "2023-05-25" to 0,
-        "2023-05-26" to 2,
-        "2023-05-27" to 2,
-        "2023-05-28" to 1,
-        "2023-05-29" to 0,
-        "2023-05-30" to 2,
-        "2023-05-31" to 1,
-        "2023-06-01" to 1,
-        "2023-06-02" to 5,
-        "2023-06-03" to 1,
-        "2023-06-04" to 2,
-        "2023-06-05" to 19,
-        "2023-06-06" to 0,
-        "2023-06-07" to 3,
-        "2023-06-08" to 5,
-        "2023-06-09" to 11,
-        "2023-06-10" to 4,
-        "2023-06-11" to 9,
-        "2023-06-12" to 2
+        "00:00" to 1,
+        "01:00" to 0,
+        "02:00" to 0,
+        "03:00" to 0,
+        "04:00" to 0,
+        "05:00" to 0,
+        "06:00" to 0,
+        "07:00" to 0,
+        "08:00" to 0,
+        "09:00" to 0,
+        "10:00" to 0,
+        "11:00" to 0,
+        "12:00" to 0,
+        "13:00" to 0,
+        "14:00" to 0,
+        "15:00" to 0,
+        "16:00" to 0,
+        "17:00" to 0,
+        "18:00" to 0,
+        "19:00" to 0,
+        "20:00" to 0,
+        "21:00" to 0,
+        "22:00" to 0,
+        "23:00" to 0
     )
     LineChartViewComposable(urlChartResponse)
 }

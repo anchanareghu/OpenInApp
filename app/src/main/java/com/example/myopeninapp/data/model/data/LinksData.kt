@@ -1,6 +1,6 @@
-package com.example.myopeninapp.com.example.myopeninapp.data.model.data
+package com.example.myopeninapp.data.model.data
 
-data class DashboardData(
+data class LinksData(
     val applied_campaign: Int,
     val `data`: Data,
     val extra_income: Double,

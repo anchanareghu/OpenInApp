@@ -8,12 +8,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import com.example.myopeninapp.data.api.ApiClient
 import com.example.myopeninapp.ui.components.navigation.MainScreen
 import com.example.myopeninapp.ui.theme.MyOpenInAppTheme
 import com.github.mikephil.charting.utils.Utils
 
 class MainActivity : ComponentActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -28,6 +28,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        ApiClient.init(this)
     }
 }
 

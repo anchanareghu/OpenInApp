@@ -1,4 +1,4 @@
-package com.example.myopeninapp.utils
+package utils
 
 import android.graphics.drawable.GradientDrawable
 
